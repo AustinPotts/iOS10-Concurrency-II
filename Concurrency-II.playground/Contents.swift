@@ -36,29 +36,50 @@ print(x)
 
 var listOfNames: [String] = []
 let nameLock = NSLock()
+let sharedAccessQueue2 = DispatchQueue(label: "Network Access Queue")//Label of Queue
 
 //Lock resources that will be concurrently accessed
 
 URLSession.shared.dataTask(with: URL(string: "https://swapi.co/people/1/")!) { (data, response, error) in
-    nameLock.lock()
-    listOfNames.append("Luke")
-    print(listOfNames)
-    nameLock.unlock()
+    
+//    DispatchQueue.main.async {
+//        listOfNames.append("Luke")   //Running on main queue
+//        print(listOfNames)
+//    }
+    
+    sharedAccessQueue2.async { //Do not wait-async
+       // nameLock.lock()
+        listOfNames.append("Luke")
+        print(listOfNames)
+       // nameLock.unlock()  //These are no longer needed when using sharedAccessQueue
+    }
+    
+    
        
 }.resume()
 
 URLSession.shared.dataTask(with: URL(string: "https://swapi.co/people/1/")!) { (data, response, error) in
-          nameLock.lock()
-          listOfNames.append("Han")
-          print(listOfNames)
-          nameLock.unlock()
+    
+    sharedAccessQueue2.async {
+       // nameLock.lock()
+        listOfNames.append("Han")
+        print(listOfNames)
+       // nameLock.unlock() //These are no longer needed when using sharedAccessQueue
+    }
+    
+    
        
 }.resume()
 
 URLSession.shared.dataTask(with: URL(string: "https://swapi.co/people/1/")!) { (data, response, error) in
-          nameLock.lock()
-          listOfNames.append("Yoda")
-          print(listOfNames)
-          nameLock.unlock()
+    
+    sharedAccessQueue2.async {
+        //nameLock.lock()
+         listOfNames.append("Yoda")
+         print(listOfNames)
+         //nameLock.unlock() //These are no longer needed when using sharedAccessQueue
+    }
+     
+         
        
 }.resume()
